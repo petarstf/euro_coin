@@ -15,10 +15,12 @@ async function loadImg(buffer) {
         y,
         idx
       ) {
-        p.push(this.bitmap.data[idx + 0]);
-        p.push(this.bitmap.data[idx + 1]);
-        p.push(this.bitmap.data[idx + 2]);
+        p.push(this.bitmap.data[idx + 0]/255.0);
+        p.push(this.bitmap.data[idx + 1]/255.0);
+        p.push(this.bitmap.data[idx + 2]/255.0);
       });
+      // p = p/255.0;
+      // console.log(p);
       return tf.tensor4d(p, [1, image.bitmap.width, image.bitmap.height, 3]);
     }
     ).catch(
@@ -30,17 +32,17 @@ async function loadImg(buffer) {
 
 async function predict(buffer) {
   const input = await loadImg(buffer);
-
+  console.log(input);
   predictions = await model.predict(input);
 
   // console.log(predictions.dataSync());
 
   const prediction = predictions
-      .reshape([766])
+      .reshape([743])
       .argMax()
       .dataSync()[0];
   const accuracy = predictions
-      .reshape([766])
+      .reshape([743])
       .max()
       .dataSync()[0];
   return { prediction: prediction, accuracy: accuracy };
@@ -68,7 +70,7 @@ async function writeOut(buffer) {
 async function getCoin(buffer, res) {
   item = await writeOut(buffer);
   // console.log(item);
-  let api = "https://euro-coin-418c3.firebaseio.com/euroc_v1/" + item.index + ".json";
+  let api = "https://euro-coin-418c3.firebaseio.com/" + item.index + ".json";
   https.get(api, 
     response => {
       response.setEncoding('utf8');
