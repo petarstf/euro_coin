@@ -1,15 +1,15 @@
 const express = require('express');
-
 const tf = require('@tensorflow/tfjs-node');
 const Jimp = require('jimp');
 const https = require('https');
+const fs = require('fs');
 
 async function loadImg(buffer) {
   return Jimp.read(buffer).then(
     (image) => {
       const p = [];
-      image
-      .resize(150, 150)
+      image.resize(150, 150);
+
       image.scan(0, 0, image.bitmap.width, image.bitmap.height, function test(
         x,
         y,
@@ -30,9 +30,11 @@ async function loadImg(buffer) {
 
 async function predict(buffer) {
   const input = await loadImg(buffer);
-  // input = await get_bottleneck_features(img);
+
   predictions = await model.predict(input);
-  console.log(predictions.reshape([766]).dataSync(  ));
+
+  // console.log(predictions.dataSync());
+
   const prediction = predictions
       .reshape([766])
       .argMax()
@@ -65,7 +67,8 @@ async function writeOut(buffer) {
 
 async function getCoin(buffer, res) {
   item = await writeOut(buffer);
-  let api = "https://euro-coin-418c3.firebaseio.com/" + item.index + ".json";
+  // console.log(item);
+  let api = "https://euro-coin-418c3.firebaseio.com/euroc_v1/" + item.index + ".json";
   https.get(api, 
     response => {
       response.setEncoding('utf8');
